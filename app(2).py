@@ -138,7 +138,7 @@ st.divider()
 st.subheader('Bewertungsergebnis')
 
 m1, m2, m3 = st.columns(3)
-m1.metric('Schätzwert des Gesamtobjekts inkl. Bodenwert', fmt_eur(schaetzwert))
+m1.metric('Marktpreisschätzung', fmt_eur(schaetzwert))
 m2.metric('Preis pro m²', fmt_eur(schaetzwert / flaeche_input))
 m3.metric('Gebäudealter', f'{alter_input:.0f} Jahre')
 
@@ -173,7 +173,7 @@ plt.close()
 
 st.divider()
 st.caption(
-    '**Methodischer Hinweis:** Der Schätzwert des Gesamtobjekts inkl. Bodenwert basiert auf einem '
+    '**Methodischer Hinweis:** Der Marktpreisschätzung basiert auf einem '
     'hedonischen OLS-Regressionsmodell, trainiert auf Transaktionsdaten des Gutachterausschusses Stuttgart. '
     'Eingabevariablen: Wohnfläche, Gebäudealter, Stadtbezirk. '
     'Die Bandbreite entspricht dem 80%-Konfidenzintervall des Modells. '
