@@ -2,9 +2,6 @@
 # BEWERTUNGSASSISTENT – Region Stuttgart
 # Streamlit Web-App | Bachelorarbeit
 # =============================================================================
-# Installation:  pip install streamlit pandas numpy statsmodels openpyxl
-# Starten:       streamlit run app.py
-# =============================================================================
 
 import streamlit as st
 import pandas as pd
@@ -15,7 +12,6 @@ import matplotlib.ticker as mticker
 import warnings
 warnings.filterwarnings('ignore')
 
-# ── Seitenconfig ──────────────────────────────────────────────────────────────
 st.set_page_config(
     page_title='Bewertungsassistent Stuttgart',
     page_icon='🏠',
@@ -26,7 +22,14 @@ C_HAUPT  = '#534AB7'
 C_AKZENT = '#BA7517'
 C_ROT    = '#A32D2D'
 
-# ── Modell laden & trainieren (gecacht) ───────────────────────────────────────
+def fmt_eur(wert):
+    """Formatiert einen Eurobetrag mit Punkt als Tausendertrennzeichen."""
+    return f"{wert:,.0f} €".replace(",", ".")
+
+def fmt_kurz(wert):
+    """Formatiert einen Eurobetrag in Tausend mit Punkt."""
+    return f"{wert/1000:,.0f}k €".replace(",", ".")
+
 @st.cache_resource
 def modell_trainieren():
     df = pd.read_excel('Daten GAU.xlsx')
@@ -71,7 +74,6 @@ def modell_trainieren():
     y = df['kaufpreis']
     modell = sm.OLS(y, sm.add_constant(X)).fit()
 
-    # MAPE je Bezirk
     df['schaetzwert'] = modell.fittedvalues.values
     df['residuum']    = df['kaufpreis'] - df['schaetzwert']
     df['ape']         = (df['residuum'].abs() / df['kaufpreis']) * 100
@@ -81,13 +83,11 @@ def modell_trainieren():
 
 modell, bezirke, ref_bezirk, mape_bezirk, df = modell_trainieren()
 
-# ── Header ────────────────────────────────────────────────────────────────────
 st.title('🏠 Bewertungsassistent Stuttgart')
 st.markdown('**Automatisierte Markteinschätzung auf Basis hedonischer Regressionsanalyse**')
 st.markdown(f'*Trainingsdaten: Gutachterausschuss Stuttgart · n = {len(df)} Transaktionen*')
 st.divider()
 
-# ── Eingaben ──────────────────────────────────────────────────────────────────
 st.subheader('Objektparameter eingeben')
 
 col1, col2, col3 = st.columns(3)
@@ -111,7 +111,6 @@ with col3:
 
 alter_input = 2024 - baujahr_input
 
-# ── Berechnung ────────────────────────────────────────────────────────────────
 def schaetzung_berechnen(bezirk, flaeche, alter):
     eingabe = pd.DataFrame({'const': [1.0],
                              'flaeche_m2': [flaeche],
@@ -135,18 +134,16 @@ schaetzwert, ci_low, ci_high = schaetzung_berechnen(
 )
 mape_bez = mape_bezirk.get(bezirk_input, None)
 
-# ── Ergebnis-Karten ───────────────────────────────────────────────────────────
 st.divider()
 st.subheader('Bewertungsergebnis')
 
 m1, m2, m3 = st.columns(3)
-m1.metric('Schätzwert', f'{schaetzwert:,.0f} €')
-m2.metric('Preis pro m²', f'{schaetzwert/flaeche_input:,.0f} €/m²')
+m1.metric('Schätzwert des Gesamtobjekts inkl. Bodenwert', fmt_eur(schaetzwert))
+m2.metric('Preis pro m²', fmt_eur(schaetzwert / flaeche_input))
 m3.metric('Gebäudealter', f'{alter_input:.0f} Jahre')
 
-st.info(f'**Bandbreite (80 %):** {ci_low:,.0f} € — {ci_high:,.0f} €')
+st.info(f'**Bandbreite (80 %):** {fmt_eur(ci_low)} — {fmt_eur(ci_high)}')
 
-# Modellgenauigkeit
 if mape_bez is not None:
     if mape_bez < 15:
         st.success(f'**Modellgenauigkeit in {bezirk_input}:** MAPE = {mape_bez:.1f}% — Gute Schätzqualität')
@@ -155,7 +152,6 @@ if mape_bez is not None:
     else:
         st.error(f'**Modellgenauigkeit in {bezirk_input}:** MAPE = {mape_bez:.1f}% — Eingeschränkte Schätzqualität, atypischer Teilmarkt')
 
-# ── Kontext-Chart: Bezirk-Vergleich ───────────────────────────────────────────
 st.divider()
 st.subheader('Einordnung im Bezirksvergleich')
 
@@ -165,7 +161,7 @@ farben = [C_HAUPT if b != bezirk_input else C_AKZENT for b in median_preise.inde
 fig, ax = plt.subplots(figsize=(9, 6))
 ax.barh(median_preise.index, median_preise.values/1000, color=farben, alpha=0.85)
 ax.axvline(schaetzwert/1000, color=C_ROT, lw=1.5, linestyle='--',
-           label=f'Ihr Schätzwert: {schaetzwert/1000:,.0f}k €')
+           label=f'Ihr Schätzwert: {fmt_kurz(schaetzwert)}')
 ax.set_xlabel('Medianer Kaufpreis (Tsd. €)')
 ax.set_title('Medianer Kaufpreis je Stadtbezirk', fontweight='bold')
 ax.spines['top'].set_visible(False)
@@ -175,11 +171,10 @@ plt.tight_layout()
 st.pyplot(fig)
 plt.close()
 
-# ── Methodischer Hinweis ──────────────────────────────────────────────────────
 st.divider()
 st.caption(
-    '**Methodischer Hinweis:** Der Schätzwert basiert auf einem hedonischen OLS-Regressionsmodell, '
-    'trainiert auf Transaktionsdaten des Gutachterausschusses Stuttgart. '
+    '**Methodischer Hinweis:** Der Schätzwert des Gesamtobjekts inkl. Bodenwert basiert auf einem '
+    'hedonischen OLS-Regressionsmodell, trainiert auf Transaktionsdaten des Gutachterausschusses Stuttgart. '
     'Eingabevariablen: Wohnfläche, Gebäudealter, Stadtbezirk. '
     'Die Bandbreite entspricht dem 80%-Konfidenzintervall des Modells. '
     'Der Assistent ersetzt keine normierte Einzelbewertung nach ImmoWertV.'
