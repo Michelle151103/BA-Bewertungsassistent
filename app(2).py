@@ -161,7 +161,7 @@ farben = [C_HAUPT if b != bezirk_input else C_AKZENT for b in median_preise.inde
 fig, ax = plt.subplots(figsize=(9, 6))
 ax.barh(median_preise.index, median_preise.values/1000, color=farben, alpha=0.85)
 ax.axvline(schaetzwert/1000, color=C_ROT, lw=1.5, linestyle='--',
-           label=f'Ihr Schätzwert: {fmt_kurz(schaetzwert)}')
+           label=f'Ihre Marktpreisschätzung: {fmt_kurz(schaetzwert)}')
 ax.set_xlabel('Medianer Kaufpreis (Tsd. €)')
 ax.set_title('Medianer Kaufpreis je Stadtbezirk', fontweight='bold')
 ax.spines['top'].set_visible(False)
@@ -173,7 +173,7 @@ plt.close()
 
 st.divider()
 st.caption(
-    '**Methodischer Hinweis:** Der Marktpreisschätzung basiert auf einem '
+    '**Methodischer Hinweis:** Die Marktpreisschätzung basiert auf einem '
     'hedonischen OLS-Regressionsmodell, trainiert auf Transaktionsdaten des Gutachterausschusses Stuttgart. '
     'Eingabevariablen: Wohnfläche, Gebäudealter, Stadtbezirk. '
     'Die Bandbreite entspricht dem 80%-Konfidenzintervall des Modells. '
