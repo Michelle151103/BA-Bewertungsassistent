@@ -173,9 +173,13 @@ plt.close()
 
 st.divider()
 st.caption(
-    '**Methodischer Hinweis:** Die Marktpreisschätzung basiert auf einem '
+    '**Methodischer Hinweis:** Die Marktpreisschätzung inklusive Bodenpreis basiert auf einem '
     'hedonischen OLS-Regressionsmodell, trainiert auf Transaktionsdaten des Gutachterausschusses Stuttgart. '
     'Eingabevariablen: Wohnfläche, Gebäudealter, Stadtbezirk. '
     'Die Bandbreite entspricht dem 80%-Konfidenzintervall des Modells. '
-    'Der Assistent ersetzt keine normierte Einzelbewertung nach ImmoWertV.'
+    'Der Assistent ersetzt keine normierte Einzelbewertung nach ImmoWertV. '    
+    'Anzahl der Transaktionen je Stadtbezirk: Stuttgart-West 58, Bad Cannstatt 54, Stuttgart-Ost 45, '
+    'Stuttgart-Süd 34, Möhringen 29, Zuffenhausen 24, Stuttgart-Mitte 20, Vaihingen 18, Feuerbach 13, '
+    'Weilimdorf 11, Stuttgart-Nord 11, Heumaden 10, Plieningen 9, Hofen 9, Rohr 8, Degerloch 7, '
+    'Botnang 5, Stammheim 3, Riedenberg 3, Untertürkheim 2, Mühlhausen 1, Münster 1.'
 )
